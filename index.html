@@ -1,0 +1,1471 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="de">
+
+<head>
+  <title>Helden des Bildschirms | Exif Checker</title>
+
+  <meta charset="utf-8">
+
+  <meta name="description" content="Exif Checker sucht die Meta-Daten von JPEG und Co nach Geo Daten ab.">
+
+  <meta property="og:image" content="/icon/android-icon-192x192.png" />
+
+  <meta name="keywords" content="payback,logo, such, suche, exif, checker, steem, hive">
+
+  <meta name="author" content="Janis">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+  <link rel="stylesheet" href="index.css">
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/icon/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/icon/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icon/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/icon/apple-/icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/icon/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/icon/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icon/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icon/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/icon/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icon/favicon-16x16.png">
+  <link rel="manifest" href="/icon/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#0033CC" />
+  <style type="text/css">
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+  <script>
+    function ConvertDMSToDD(degrees, minutes, seconds, direction) {
+      var dd = degrees + (minutes / 60) + (seconds / 3600);
+      if (direction == "S" || direction == "W") {
+        dd = dd * -1;
+      }
+      return dd;
+    }
+
+    function FindGeo(src) {
+      var latFinal = false;
+      var lonFinal = false;
+      /*  var image = new Image();
+        image.src = "https://heldendesbildschirms.de/artikel/datenrettung-wie-werden-daten-geloescht-mit-welchen-mitteln-werden-die-daten-wiederhergestellt/img/0.jpg";
+        image.crossOrigin = "Anonymous";
+        image.onload = function(){*/
+      var img = new Image();
+      img.src = src;
+      img.onload = function() {
+
+        EXIF.getData(img, function() {
+          let myData = this;
+          if (EXIF.getTag(myData, "GPSLatitude") != undefined || EXIF.getTag(myData, "GPSLongitude" != undefined)) {
+            // Calculate latitude decimal
+            var latDegree = myData.exifdata.GPSLatitude[0].numerator;
+            var latMinute = myData.exifdata.GPSLatitude[1].numerator;
+            var latSecond = myData.exifdata.GPSLatitude[2].numerator;
+            var latDirection = myData.exifdata.GPSLatitudeRef;
+            latFinal = ConvertDMSToDD(latDegree, latMinute, latSecond, latDirection);
+
+            // Calculate longitude decimal
+            var lonDegree = myData.exifdata.GPSLongitude[0].numerator;
+            var lonMinute = myData.exifdata.GPSLongitude[1].numerator;
+            var lonSecond = myData.exifdata.GPSLongitude[2].numerator;
+            var lonDirection = myData.exifdata.GPSLongitudeRef;
+
+            lonFinal = ConvertDMSToDD(lonDegree, lonMinute, lonSecond, lonDirection);
+            if (latFinal != false && lonFinal != false) {
+              return '<a href="http://www.google.com/maps/place/' + latFinal + ',' + lonFinal + '" target="_blank">Google Maps</a>'; //Ja das geht garnicht
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        });
+      };
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/steem/dist/steem.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@hiveio/hive-js/dist/hive.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      createArtikelPage_steamworld_api();
+    });
+
+    function createArtikelPage_steamworld_api() {
+      var jf = new XMLHttpRequest();
+      jf.open("GET", "https://heldendesbildschirms.de/artikel/templates/PostsByAuthor.json", false);
+      jf.send(null)
+      const jf_PBA = JSON.parse(jf.response).inhalt;
+      const cols = JSON.parse(jf_PBA).result.cols;
+      const rows = JSON.parse(jf_PBA).result.rows;
+
+
+      console.log(cols.author);
+
+      var author = "janisplayer";
+      for (var i = 0; i < 4; i++) {
+        //const months = [0, 1, 2, 6, 7, 9, 11];
+        //const random = Math.floor(Math.random() * months.length);
+        if (rows[i][cols.author] == author) {
+          createArtikel_steamworld_api(get_rand(nums), rows, cols);
+        }
+      }
+    }
+
+    var nums = [0, 1, 2, 4, 6, 7, 9, 10, 11, 13, 14, 15, 16, 19, 20, 21, 22, 23, 26, 27, 28];
+    var gen_nums = [];
+
+    function in_array(array, el) {
+      for (var i = 0; i < array.length; i++)
+        if (array[i] == el) return true;
+      return false;
+    }
+
+    function get_rand(array) {
+      var rand = array[Math.floor(Math.random() * array.length)];
+      if (!in_array(gen_nums, rand)) {
+        gen_nums.push(rand);
+        return rand;
+      }
+      return get_rand(array);
+    }
+
+    function createArtikel_steamworld_api(i, rows, cols) {
+      const br = document.createElement("br");
+      const imgcontainer = document.createElement("imgcontainer");
+      const picture = document.createElement("picture");
+      const imgcontainera = document.createElement("a");
+      const title = document.createElement("a");
+      const img = document.createElement("img");
+
+      const date = document.createElement("datum");
+      const content_box = document.getElementsByClassName("lastartikellist")[0];
+
+      const artikel = document.createElement("artikel");
+
+      if (JSON.parse(rows[i][cols.json_metadata]).image != null && JSON.parse(rows[i][cols.json_metadata]).image[0] != undefined) {
+        /*img.src = JSON.parse(rows[i][cols.json_metadata]).image[0];
+        imgcontainera.href = "?artikel=" + rows[i][cols.permlink];
+        img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+        img.style = "width: 100%; height: 180px; object-fit: cover;";*/
+        img.src = "/artikel/" + rows[i][cols.permlink] + "/img/preview.webp";
+        imgcontainera.href = "/artikel/?artikel=" + rows[i][cols.permlink];
+        img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+        //img.style = "width: 100%; height: 180px; object-fit: cover;";
+      } else {
+        img.src = "/artikel/404.jpg";
+        imgcontainera.href = "/artikel/?artikel=" + rows[i][cols.permlink];
+        img.style = "width: 100%; height: 180px; object-fit: cover;";
+      }
+
+      title.innerText = rows[i][cols.title];
+      title.href = "/artikel/?artikel=" + rows[i][cols.permlink];
+      var dt = new Date(rows[i][cols.created] * 1000);
+      date.innerText = dt.getDate() + "." + (dt.getMonth() + 1) + "." + dt.getFullYear() + " " + dt.getHours() + ":" + dt.getMinutes();
+
+      content_box.appendChild(artikel);
+      artikel.appendChild(imgcontainera);
+      imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
+      imgcontainera.appendChild(imgcontainer);
+      imgcontainer.appendChild(picture);
+      if (img.src != null) {
+        picture.appendChild(img);
+        imgcontainer.appendChild(br);
+      }
+      artikel.appendChild(title);
+      artikel.appendChild(date);
+    }
+    var Artikel_steamworld_api_scan_running = false;
+
+    function createCheckArtikelPage_steamworld_api(author) {
+      if (Artikel_steamworld_api_scan_running == true) {
+        alert("Ein Scan läuft bereits");
+        return 0;
+      }
+      Artikel_steamworld_api_scan_running = true;
+      document.getElementById(payback_suche_summit.innerText = "suche läuft");
+
+      var jf = new XMLHttpRequest();
+      /*jf.open("GET", "https://heldendesbildschirms.de/artikel/templates/PostsByAuthor.json", false);
+      jf.send(null)
+      const jf_PBA = JSON.parse(jf.response).inhalt;
+      const cols = JSON.parse(jf_PBA).result.cols;
+      const rows = JSON.parse(jf_PBA).result.rows;*/
+
+      jf.open("GET", ("https://sds.steemworld.org/feeds_api/getPostsByAuthor/" + author), false);
+      jf.send(null);
+
+      const cols = JSON.parse(jf.response).result.cols;
+      const rows = JSON.parse(jf.response).result.rows;
+
+      var scanlength = rows.length;
+      if (MaxLänge_checkbox.checked == true) {
+        //maxlänge = document.getElementById("payback_suche_input_maxzahlen").value;
+        scanlength = parseInt(document.getElementById("payback_suche_input_zahlen").value);
+      }
+
+      var scanminlength = 0;
+      if (MinLänge_checkbox.checked == true) {
+        scanminlength = parseInt(document.getElementById("payback_suche_input_minzahlen").value);
+      }
+
+      for (var i = scanminlength; i < scanlength; i++) {
+        //document.getElementById("payback_suche_input_buchstaben").value = "Scan läuft: " + i + " / " + scanlength;
+        if (rows[i][cols.author] == author || buchstaben_checkbox.checked == true) {
+          checkArtikel_steamworld_api(i, rows, cols, scanlength);
+        }
+      }
+    }
+
+    async function checkArtikel_steamworld_api(i, rows, cols, scanlength) {
+      var json_metadatatemp = JSON.parse(rows[i][cols.json_metadata]).image;
+      if (json_metadatatemp != null && json_metadatatemp != undefined) {
+        //img.src = JSON.parse(rows[i][cols.json_metadata]).image[0];
+        //imgcontainera.href = "/artikel/?artikel=" + rows[i][cols.permlink];
+        //img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+
+        for (var ii = 0; ii < (JSON.parse(rows[i][cols.json_metadata]).image.length); ii++) {
+          const ingscr = (JSON.parse(rows[i][cols.json_metadata]).image[ii]); //
+          try {
+            var mode = 0;
+            if (livesuche_checkbox.checked == true) {
+              mode = 1;
+            }
+            if (mode == 1) {
+              var imagetemp = new Image(); //Kann Netzwerk leistung sparren. Allerdings muss ich wohl eine dataURL erstellen ohne Canvas.
+              imagetemp.crossOrigin = "Anonymous";
+              imagetemp.src = JSON.parse(rows[i][cols.json_metadata]).image[ii];
+              let {
+                latitude,
+                longitude
+              } = await exifr.gps(imagetemp);
+              if (typeof latitude === 'number' || typeof longitude === 'number') {
+                createcheckArtikel_steamworld_api(i, rows, cols, latitude, longitude, ii, imagetemp, mode);
+              }
+            } else {
+              var imagetemp = 0;
+              let {
+                latitude,
+                longitude
+              } = await exifr.gps(JSON.parse(rows[i][cols.json_metadata]).image[ii]);
+              if (typeof latitude === 'number' || typeof longitude === 'number') {
+                createcheckArtikel_steamworld_api(i, rows, cols, latitude, longitude, ii, imagetemp, mode);
+              }
+            }
+
+            //imagetemp.onload = function() {  //Geht nicht warscheinlich wegen async
+            //let filter = "nan";
+            //if (latitude.toLowerCase() != filter.toLowerCase() || longitude.toLowerCase() != filter.toLowerCase()) { Das würde ohne If string oder try nicht funktionieren.
+
+            //if (typeof latitude === 'number' || typeof longitude === 'number') {
+            //  createcheckArtikel_steamworld_api(i, rows, cols, latitude, longitude, ii, imagetemp, mode);
+            //}
+
+            //}
+          } catch (e) {
+
+          } finally {
+
+          }
+        }
+        /*if (latitude != undefined || longitude != undefined) {
+           createArtikel_steamworld_api(i, rows, cols);
+        }*/
+        //alert(FindGeo(JSON.parse(rows[i][cols.json_metadata]).image[0]; Kannst vergesseb das zurück zu geben.
+        //alert(FindGeo("https://heldendesbildschirms.de/artikel/datenrettung-wie-werden-daten-geloescht-mit-welchen-mitteln-werden-die-daten-wiederhergestellt/img/0.jpg"));
+      }
+      if (i == scanlength - 1) { //Es ist leider Zufall in welcher Reihenfolge das passiert, man müsste viel umschreiben umd das zu verbessern, aber es geht so.
+        Artikel_steamworld_api_scan_running = false;
+        document.getElementById(payback_suche_summit.innerText = "suchen");
+      }
+    }
+
+    async function createcheckArtikel_steamworld_api(i, rows, cols, latitude, longitude, imgi, imagetemp, mode) {
+      //document.getElementById("payback_suche_input_buchstaben").value = "Scan läuft: " + i + " / " ;
+      const br = document.createElement("br");
+      const imgcontainer = document.createElement("imgcontainer");
+      const picture = document.createElement("picture");
+      const imgcontainera = document.createElement("a");
+      const title = document.createElement("a");
+      const img = document.createElement("img");
+      const imglink = document.createElement("input");
+      const imglinkbtm = document.createElement("button");
+      const date = document.createElement("datum");
+      const geo = document.createElement("a");
+      const content_box = document.getElementsByClassName("logollist")[0];
+
+      const artikel = document.createElement("artikel");
+
+      //if (JSON.parse(rows[i][cols.json_metadata]).image != null && JSON.parse(rows[i][cols.json_metadata]).image[0] != undefined) {
+      /*img.src = JSON.parse(rows[i][cols.json_metadata]).image[0];
+      imgcontainera.href = "?artikel=" + rows[i][cols.permlink];
+      img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+      img.style = "width: 100%; height: 180px; object-fit: cover;";*/
+      //img.src = "/artikel/" + rows[i][cols.permlink] + "/img/preview.jpg";
+
+      var hreflink = "https://steemit.com/";
+      if (rows[i][cols.community] != "") {
+        hreflink = hreflink + rows[i][cols.community] + "/"
+      }
+      hreflink = hreflink + "@" + rows[i][cols.author] + "/" + rows[i][cols.permlink];
+
+      var img_src = JSON.parse(rows[i][cols.json_metadata]).image[imgi];
+
+      if (link_liste_checkbox.checked == true) {
+        document.getElementById("input_linkliste").value = document.getElementById("input_linkliste").value + img_src + "\n";
+      }
+
+      if (noimg_checkbox.checked != true) {
+        if (mode == 1) {
+          imagetemp.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+          imagetemp.href = hreflink;
+        } else {
+          img.src = img_src;
+          img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+          imgcontainera.href = hreflink;
+        }
+      }
+
+      //img.style = "width: 100%; height: 180px; object-fit: cover;";
+      /*} else {
+        img.src = "/artikel/404.jpg";
+        imgcontainera.href = hreflink;
+        img.style = "width: 100%; height: 180px; object-fit: cover;";
+      }*/
+      title.innerText = rows[i][cols.title];
+      title.href = hreflink;
+      var dt = new Date(rows[i][cols.created] * 1000);
+      date.innerText = dt.getDate() + "." + (dt.getMonth() + 1) + "." + dt.getFullYear() + " " + dt.getHours() + ":" + dt.getMinutes();
+
+      content_box.appendChild(artikel);
+      artikel.appendChild(imgcontainera);
+      imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
+      imgcontainera.appendChild(imgcontainer);
+      imgcontainer.appendChild(picture);
+      if (img.src != null || imagetemp.src != null) {
+        if (mode == 1) {
+          picture.appendChild(imagetemp);
+        } else {
+          picture.appendChild(img);
+        }
+        imgcontainer.appendChild(br);
+      }
+      artikel.appendChild(title);
+      imglink.value = img_src;
+      imglink.id = i + imgi;
+      imglinkbtm.innerText = "Copy";
+      imglinkbtm.onclick = function() {
+        copy(i + imgi);
+      };
+      artikel.appendChild(imglink)
+      artikel.appendChild(imglinkbtm)
+      artikel.appendChild(date);
+
+      geo.innerHTML = "Google Maps" + '<br>' + latitude + ',' + longitude;
+      geo.style = "word-break: break-all;";
+      geo.href = 'https://www.google.com/maps/place/' + latitude + ',' + longitude; // + 'target="_blank';
+      artikel.appendChild(geo);
+
+      //https://stackoverflow.com/questions/73086470/delete-exif-data-xmp-from-image-in-react für Später zum löschen der Exif Dateien, aber mache das warsheinlich anderes.
+    }
+
+    // Hive
+    var Artikel_hive_api_scan_running = false;
+
+    function createCheckArtikelPage_hive_api(author) {
+      // async function myFunction() {
+      //  document.getElementById("demo").value = ("fhdfgdf");
+      //   let x = await fetch('https://api.hive.blog', {
+      //     method: 'POST',
+      //     headers: {
+      //         'Content-Type': 'application/x-www-form-urlencoded'
+      //     },
+      //     body: '{"jsonrpc":"2.0", "method":"bridge.get_account_posts", "params":{"sort":"blog", "account": "janisplayer", "limit": 100}, "id":1}'
+      // });
+      // fetch('https://example.com', {
+      // method: 'POST',
+      // headers: {
+      //   'Content-Type': 'application/json',
+      //   'Authorization': 'Basic username:password')),
+      // },
+      // body: data
+      // }).then(response => console.log(response))
+      // .catch(error => console.log('Authorization failed : ' + error.message);
+      //
+      // var jf = new XMLHttpRequest();
+      // jf.open("Post", "https://api.hive.blog", false);
+      // jf.setRequestHeader("Content-Type", "text/plain");
+      // jf.setRequestHeader('{"jsonrpc":"2.0", "method":"bridge.get_account_posts", "params":{"sort":"blog", "account": "janisplayer", "limit": 100}, "id":1}');
+      //
+      // jf.send(null)
+      // const x = JSON.parse(jf.response).inhalt;
+      if (Artikel_hive_api_scan_running == true) {
+        alert("Ein Scan läuft bereits");
+        return 0;
+      }
+      Artikel_hive_api_scan_running = true;
+      document.getElementById(payback_suche_summit.innerText = "suche läuft");
+      var scanlength = 500;
+      if (MaxLänge_checkbox.checked == true) {
+        //maxlänge = document.getElementById("payback_suche_input_maxzahlen").value;
+        if (parseInt(document.getElementById("payback_suche_input_zahlen").value) <= 500) {
+            scanlength = parseInt(document.getElementById("payback_suche_input_zahlen").value);
+          } else {
+            alert("500 ist das maximum");
+            document.getElementById("payback_suche_input_zahlen").value = 500;
+            document.getElementById("payback_suche_input_maxzahlen").value = 500;
+          }
+        }
+
+        var scanminlength = 0;
+        if (MinLänge_checkbox.checked == true) {
+          scanminlength = parseInt(document.getElementById("payback_suche_input_minzahlen").value);
+        }
+
+        hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) { //getBlog ist Vielleicht deutlich besser geeigent, kann aber nicht alles scannen Kommentare fehlen auch.
+          if (data.length == 500) { //Da muss eigentlich eine Schleife hin.
+            document.getElementById("errorlist").style.display = "";
+            document.getElementById("settings").style.display = "";
+            MaxLänge_checkbox.checked = true;
+            MinLänge_checkbox.checked = true;
+            document.getElementById("payback_suche_input_zahlen").style.display = "";
+            document.getElementById("payback_suche_input_minzahlen").style.display = "";
+            document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "";
+            document.getElementById("payback_suche_input_maxzahlen").style.display = "";
+            //document.getElementById("errorlistmore_summit").onclick = "createCheckArtikelPage_hive_api(" + author + ");";
+            document.getElementById("errorlistmore_summit").onclick = function() {
+              createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
+            }
+            //document.getElementById("payback_suche_summit").innerText = "Weitere 500 Posts überprüfen";
+            document.getElementById("payback_suche_input_minzahlen").value = (scanminlength + 500);
+            document.getElementById("payback_suche_input_zahlen").value = 500;
+            document.getElementById("payback_suche_input_minzahlen_eingabe").value = (scanminlength + 500);
+            document.getElementById("payback_suche_input_maxzahlen").value = 500;
+            // alert("Oh ein Fehler, leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive überprüfen.");
+            // hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) {
+            //
+            // });
+          } else {
+            document.getElementById("errorlist").style.display = "none";
+            document.getElementById("settings").style.display = "none";
+            MaxLänge_checkbox.checked = false;
+            MinLänge_checkbox.checked = false;
+            document.getElementById("payback_suche_input_zahlen").style.display = "none";
+            document.getElementById("payback_suche_input_minzahlen").style.display = "none";
+            document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "none";
+            document.getElementById("payback_suche_input_maxzahlen").style.display = "none";
+            //document.getElementById("payback_suche_summit").innerText = "suchen";
+          }
+
+          for (var i = 0; i < data.length; i++) {
+            if (data[i]["author"] == author) {
+              checkArtikel_hive_api(author, data[i]["permlink"], i);
+            }
+          }
+          Artikel_hive_api_scan_running = false;
+          document.getElementById(payback_suche_summit.innerText = "suchen");
+        });
+      }
+
+      async function checkArtikel_hive_api(author, permlink, i) {
+        hive.api.getContent(author, permlink, async function(err, result) {
+          var json_metadatatemp = JSON.parse(result["json_metadata"]).image
+          if (json_metadatatemp != null && json_metadatatemp != undefined) {
+            for (var ii = 0; ii < ((JSON.parse(result["json_metadata"]).image).length); ii++) {
+              const ingscr = (JSON.parse(result["json_metadata"]).image[ii]); //
+              try {
+                var mode = 0;
+                if (livesuche_checkbox.checked == true) {
+                  mode = 1;
+                }
+                if (mode == 1) {
+                  var imagetemp = new Image(); //Kann Netzwerk leistung sparren. Allerdings muss ich wohl eine dataURL erstellen ohne Canvas.
+                  imagetemp.crossOrigin = "Anonymous";
+                  imagetemp.src = JSON.parse(result["json_metadata"]).image[ii];
+                  let {
+                    latitude,
+                    longitude
+                  } = await exifr.gps(imagetemp);
+                  if (typeof latitude === 'number' || typeof longitude === 'number') {
+                    createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
+                  }
+                } else {
+                  var imagetemp = 0;
+                  let {
+                    latitude,
+                    longitude
+                  } = await exifr.gps(JSON.parse(result["json_metadata"]).image[ii]);
+                  if (typeof latitude === 'number' || typeof longitude === 'number') {
+                    createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
+                  }
+                }
+              } catch (e) {} finally {}
+            }
+          }
+        });
+      }
+
+      function createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode) {
+        const br = document.createElement("br");
+        const imgcontainer = document.createElement("imgcontainer");
+        const picture = document.createElement("picture");
+        const imgcontainera = document.createElement("a");
+        const title = document.createElement("a");
+        const img = document.createElement("img");
+        const imglink = document.createElement("input");
+        const imglinkbtm = document.createElement("button");
+        const date = document.createElement("datum");
+        const geo = document.createElement("a");
+        const content_box = document.getElementsByClassName("logollist")[0];
+
+        const artikel = document.createElement("artikel");
+
+        var hreflink = "https://hive.blog/";
+        if (result["community"] != "") {
+          hreflink = hreflink + result["community"] + "/"
+        }
+        hreflink = hreflink + "@" + result["author"] + "/" + result["permlink"];
+
+        var img_src = (JSON.parse(result["json_metadata"]).image[ii]);
+        if (link_liste_checkbox.checked == true) {
+          document.getElementById("input_linkliste").value = document.getElementById("input_linkliste").value + img_src + "\n";
+        }
+
+        if (noimg_checkbox.checked != true) {
+          if (mode == 1) {
+            imagetemp.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+            imagetemp.href = hreflink;
+          } else {
+            img.src = img_src;
+            img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+            imgcontainera.href = hreflink;
+          }
+        }
+
+        title.innerText = result["title"];
+        title.href = hreflink;
+        var dt = new Date(result["created"]);
+        date.innerText = dt.getDate() + "." + (dt.getMonth() + 1) + "." + dt.getFullYear() + " " + dt.getHours() + ":" + dt.getMinutes();
+
+        content_box.appendChild(artikel);
+        artikel.appendChild(imgcontainera);
+        imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
+        imgcontainera.appendChild(imgcontainer);
+        imgcontainer.appendChild(picture);
+        if (img.src != null || imagetemp.src != null) {
+          if (mode == 1) {
+            picture.appendChild(imagetemp);
+          } else {
+            picture.appendChild(img);
+          }
+          imgcontainer.appendChild(br);
+        }
+        artikel.appendChild(title);
+        imglink.value = img_src;
+        imglink.id = i + ii;
+        imglinkbtm.innerText = "Copy";
+        imglinkbtm.onclick = function() {
+          copy(i + ii);
+        };
+        artikel.appendChild(imglink)
+        artikel.appendChild(imglinkbtm)
+        artikel.appendChild(date);
+
+        geo.innerHTML = "Google Maps" + '<br>' + latitude + ',' + longitude;
+        geo.style = "word-break: break-all;";
+        geo.href = 'https://www.google.com/maps/place/' + latitude + ',' + longitude; // + 'target="_blank';
+        artikel.appendChild(geo);
+      }
+  </script>
+
+  <script>
+    function copy(txt) {
+      var copyText = document.getElementById(txt);
+      copyText.select();
+      copyText.setSelectionRange(0, 99999)
+      document.execCommand("copy");
+    }
+  </script>
+
+  <script>
+    var jf = new XMLHttpRequest();
+    jf.open("GET", "https://heldendesbildschirms.de/payback/getloyaltypartner.json", false);
+    jf.send(null);
+    const getloyaltypartner = JSON.parse(jf.response).partners;
+
+    function getUrlParam(Param) {
+      var url_string = window.location;
+      var url = new URL(url_string);
+      return url.searchParams.get(Param);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("steem_checkbox").checked = true;
+      document.getElementById("payback_suche_input_buchstaben").value = "crazymindstorm";
+      // document.getElementById("payback_suche_input_zahlen").value = "4";
+      // document.getElementById("payback_suche_input_buchstaben").value = "otto";
+      document.getElementById('payback_suche_summit').addEventListener('click', selectOption);
+      document.getElementById('payback_suche_input_buchstaben').addEventListener('keypress', liveselectOption);
+
+      var URLhive = getUrlParam("h");
+      if (Boolean(URLhive) == true) {
+        document.getElementById("hive_checkbox").checked = true;
+        document.getElementById("steem_checkbox").checked = false;
+      }
+
+      var URLsteem = getUrlParam("s");
+      if (Boolean(URLsteem) == true) {
+        document.getElementById("hive_checkbox").checked = false;
+        document.getElementById("steem_checkbox").checked = true;
+      }
+    });
+
+    function selectOption() {
+      if (steem_checkbox.checked == true) {
+        createCheckArtikelPage_steamworld_api(document.getElementById("payback_suche_input_buchstaben").value);
+      }
+
+      if (hive_checkbox.checked == true) {
+        createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
+      }
+    }
+
+    function liveselectOption() {
+      if (livesuche_checkbox.checked == true) {
+        if (Länge_checkbox.checked == true) {
+          listload(0, 1, 0, 1);
+        } else {
+          listload(0, 1, 1, 1);
+        }
+      }
+    }
+
+
+    let modeselectet = ["vanityName", "displayName"];
+
+    function listload(mode, livesearch, length, buchstabentrue) {
+
+      var buchstaben = document.getElementById("payback_suche_input_buchstaben").value;
+      //alert(buchstaben.substr(0, 1));
+      var länge = 0;
+      if (length == true) {
+        länge = document.getElementById("payback_suche_input_zahlen").value;
+      } else {
+        länge = buchstaben.length;
+      }
+
+      var minlänge = länge;
+      var maxlänge = länge;
+
+      if (MaxLänge_checkbox.checked == true) {
+        //maxlänge = document.getElementById("payback_suche_input_maxzahlen").value;
+        maxlänge = document.getElementById("payback_suche_input_zahlen").value;
+        minlänge = buchstaben.length;
+      }
+
+      if (MinLänge_checkbox.checked == true) {
+        minlänge = document.getElementById("payback_suche_input_minzahlen").value;
+      }
+
+      function replaceUmlaute(str) {
+        const umlautMap = {
+          '\u00dc': 'UE',
+          '\u00c4': 'AE',
+          '\u00d6': 'OE',
+          '\u00fc': 'ue',
+          '\u00e4': 'ae',
+          '\u00f6': 'oe',
+          '\u00df': 'ss',
+        }
+
+        return str
+          .replace(/[\u00dc|\u00c4|\u00d6][a-z]/g, (a) => {
+            const big = umlautMap[a.slice(0, 1)];
+            return big.charAt(0) + big.charAt(1).toLowerCase() + a.slice(1);
+          })
+          .replace(new RegExp('[' + Object.keys(umlautMap).join('|') + ']', "g"),
+            (a) => umlautMap[a]
+          );
+      }
+
+      /*function replacetoUmlaute(str) { //Wait wieso mache ich das Rad neu.
+        const umlautMap = {
+          'UE': '\u00dc',
+          'AE': '\u00c4',
+          'OE': '\u00d6',
+          'ue': '\u00fc',
+          'ae': '\u00e4',
+          'oe': '\u00f6',
+          'ss': '\u00df',
+        }
+
+        return str
+          .replace(/[UE|AE|OE][a-z]/g, (a) => {
+            const big = umlautMap[a.slice(0, 1)];
+            return big.charAt(0) + big.charAt(1).toLowerCase() + a.slice(1);
+          })
+          .replace(new RegExp('[' + Object.keys(umlautMap).join('|') + ']', "g"),
+            (a) => umlautMap[a]
+          );
+      }*/
+
+      function replacetoUmlaute(str) {
+        var mapObj = {
+            "ae": "ä",
+            "oe": "ö",
+            "ue": "ü",
+            "ss": "ß",
+            "ä": "ae",
+            "ö": "oe",
+            "ü": "ue",
+            "ß": "ss"
+          },
+          reg1 = /ä|ö|ü|ß/gi,
+          reg2 = /ae|oe|ue|ss/gi;
+
+        var reg = /ä|ö|ü|ß/i.test(str) ? reg1 : reg2;
+        return str.replace(reg, function(matched, offset, s) {
+          return mapObj[matched];
+        });
+      }
+
+      function replaceUmlautelength(buchstaben) {
+        let temp = buchstaben.toUpperCase();
+        let filter = "üöäß";
+        var Punkte = 0;
+        for (var ai = 0; ai < filter.length; ai++) {
+          for (var i = 0; i < buchstaben.length; i++) {
+            //var filter_var = temp.toUpperCase().indexOf(filter.toUpperCase());
+            var filter_var = temp.toUpperCase().indexOf(filter.substr(ai, 1).toUpperCase());
+            if (filter_var > -1) {
+              temp = temp.replace(filter.substr(ai, 1).toUpperCase(), "")
+              Punkte = Punkte + 1;
+            }
+          }
+        }
+        return Punkte;
+      }
+
+      /*var replaceUmlautevalue = parseInt(replaceUmlautelength(buchstaben));
+
+      if (replaceUmlaute_checkbox.checked == true) {
+        if (replaceUmlautevalue != false) {
+          maxlänge = parseInt(maxlänge) + replaceUmlautevalue;
+          buchstaben = replaceUmlaute(buchstaben);
+        }
+      }*/
+
+      const logo = 0;
+      var sortpos = 0;
+
+      var NameFund = 0;
+
+      for (var i = 0; i < Object.keys(getloyaltypartner).length; i++) {
+        //if (getloyaltypartner[(Object.keys(getloyaltypartner)[i])].vanityName.length == länge) {
+        //  let temp = getloyaltypartner[(Object.keys(getloyaltypartner)[i])].vanityName;
+
+        let temp = getloyaltypartner[(Object.keys(getloyaltypartner)[i])][(modeselectet[mode])].trim().replace(/ /g, '');
+
+        var replaceUmlautevalue = parseInt(replaceUmlautelength(buchstaben));
+        if (replaceUmlaute_checkbox.checked == true) {
+          if (replaceUmlautevalue != false) {
+            temp = replacetoUmlaute(temp);
+          }
+        }
+
+        //let tempname = getloyaltypartner[(Object.keys(getloyaltypartner)[i])][(modeselectet[mode])].trim();
+        let tempname = temp;
+
+        if (length == 0 || (temp.length <= maxlänge && temp.length >= minlänge)) {
+
+          // if (temp.toUpperCase.includes("ERWINMUELLER") == true) {
+          //   alert(temp);
+          // };
+
+          var schnitt = parseInt(temp.length / 3);
+          //punkte = schnitt;
+
+          if (!(anfangsuche_checkbox.checked == true && mittesuche_checkbox.checked == true && endesuche_checkbox.checked == true)) {
+            if (anfangsuche_checkbox.checked == true && endesuche_checkbox.checked == true) {
+              let temp2 = temp.substr(0, schnitt);
+              let temp3 = temp.substr(schnitt, temp.length);
+              temp = temp2 + temp3;
+            } else {
+              if (anfangsuche_checkbox.checked == true && mittesuche_checkbox.checked == false) {
+                temp = temp.substr(0, schnitt);
+                //document.getElementById("livelogollist").innerHTML = temp;
+              }
+
+              if (endesuche_checkbox.checked == true && mittesuche_checkbox.checked == false) {
+                temp = temp.substr(schnitt, temp.length);
+                //document.getElementById("livelogollist").innerHTML = temp;
+              }
+            }
+
+            if (mittesuche_checkbox.checked == true) {
+              if (anfangsuche_checkbox.checked == false && endesuche_checkbox.checked == false) {
+                temp = temp.substr(Math.round(schnitt / 2), Math.round(schnitt * 2));
+              } else {
+                if (anfangsuche_checkbox.checked == true && endesuche_checkbox.checked == false) {
+                  temp = temp.substr(0, Math.round(schnitt * 2));
+                }
+                if (anfangsuche_checkbox.checked == false && endesuche_checkbox.checked == true) {
+                  temp = temp.substr(Math.round(schnitt / 2), temp.length);
+                }
+              }
+              //punkte = punkte=schnitt*2;
+              //ocument.getElementById("livelogollist").innerHTML = temp;
+            }
+          }
+
+          var punkte = 0;
+          var lastpunkte = 0;
+
+          if (buchstabentrue == 0) {
+            createLogoList(i, getloyaltypartner, punkte, mode);
+          } else {
+            //for (var ai = 0; ai < temp.length; ai++) {
+            for (var ai = 0; ai < buchstaben.length; ai++) {
+              //if (getloyaltypartner[(Object.keys(getloyaltypartner)[i])].vanityName.includes(buchstaben.substr(ai, 1))) {
+              if (temp.toUpperCase().indexOf(buchstaben.substr(ai, 1).toUpperCase()) > -1) {
+                //if (temp.toUpperCase().includes(buchstaben.substr(ai, 1).toUpperCase())) {
+                temp = temp.replace(buchstaben.substr(ai, 1), "")
+                //logo[ai] = i;
+                punkte = punkte + 1;
+                //NameFund = NameFund + 1; Blädsinn
+              }
+            }
+            //dlrrläaspvyyrsyrpvzvm 6 tsepvüverbrnßfröealtwtsepvüverbrnßfröealtw 10
+            if (punkte >= minlänge || ((punkte >= buchstaben.length) && egalwo_checkbox.checked)) { //egal wo positon.
+              //if (punkte >= länge) {
+              logo[sortpos] = punkte;
+              if (livesearch == true) {
+                if (punkte >= lastpunkte) {
+                  NameFund = NameFund + 1;
+                  if (NameFund >= minlänge) { //Fehler (NameFund == 1)
+                    document.getElementById("livelogollist").innerHTML = tempname;
+                  } else {
+                    document.getElementById("livelogollist").innerHTML = document.getElementById("livelogollist").innerHTML + " " + tempname;
+                  }
+                }
+              } else {
+                NameFund = NameFund + 1;
+                createLogoList(i, getloyaltypartner, punkte, mode);
+              }
+            }
+          }
+        }
+      }
+      // alert(NameFund);
+      if (NameFund == 0 && mode == 0) {
+        listload(1, livesearch, length, buchstabentrue);
+      }
+
+      if (replaceUmlautevalue == true && mode == 0) {
+        createLogoListMore(livesearch, length, buchstabentrue);
+      }
+
+      //createLogoList("https://www.payback.de/resources/json/getloyaltypartner?size=1000&offset=0", "");
+    }
+    async function createLogoList(readobject, getloyaltypartner, punkte, mode) {
+      const br = document.createElement("br");
+      const title = document.createElement("a");
+      const content_box = document.getElementsByClassName("logollist")[0];
+      const imgcontainer = document.createElement("imgcontainer");
+      const checkbox = document.createElement("INPUT");
+      const button = document.createElement("button");
+      const picture = document.createElement("picture");
+      const imgcontainera = document.createElement("a");
+      const img = document.createElement("img");
+      const artikel = document.createElement("artikel");
+
+      //(Object.keys(getloyaltypartner)[2])
+      //title.innerText = getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])].vanityName.toUpperCase() + " Punkte: " + punkte;
+      title.innerText = getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])][(modeselectet[mode])].toUpperCase() + " Punkte: " + punkte;
+      title.href = 0;
+      title.style = "font-size: 100%;";
+
+      if (getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])].detailsLogoUrl != null && getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])].detailsLogoUrl != undefined) {
+        /*img.src = JSON.parse(rows[i][cols.json_metadata]).image[0];
+        imgcontainera.href = "?artikel=" + rows[i][cols.permlink];
+        img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+        img.style = "width: 100%; height: 180px; object-fit: cover;";*/
+        img.src = getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])].detailsLogoUrl;
+        imgcontainera.href = 0;
+        img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+        //img.style = "width: 100%; height: 180px; object-fit: cover;";
+      } else {
+        img.src = getloyaltypartner[(Object.keys(getloyaltypartner)[readobject])].detailsLogoUrl;
+        imgcontainera.href = 0;
+        img.style = "width: 100%; height: 180px; object-fit: cover;";
+      }
+      artikel.appendChild(imgcontainera);
+      imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
+      imgcontainera.appendChild(imgcontainer);
+      checkbox.innerText = "Lösung? (kommt vielleicht noch)"
+      checkbox.setAttribute("type", "checkbox");
+      //imgcontainer.appendChild(checkbox);
+      button.innerText = "Löschen (kommt vielleicht noch)"
+      button.style = "width:100%;";
+      button.onclick = function() {};
+      //imgcontainer.appendChild(button);
+      imgcontainer.appendChild(picture);
+      if (img.src != null) {
+        picture.appendChild(img);
+        imgcontainer.appendChild(br);
+      }
+      content_box.appendChild(artikel);
+      artikel.appendChild(title);
+      artikel.appendChild(br);
+    }
+
+    async function createLogoListMore(livesearch, length, buchstabentrue) {
+      const content_box = document.getElementsByClassName("logollist")[0];
+      const artikel = document.createElement("artikel");
+      const button = document.createElement("button");
+
+      button.innerText = "Kein Treffer Logo mit Umlauten versuchen?"
+      button.style = "width:100%;";
+      button.onclick = function() {
+        listload(1, livesearch, length, buchstabentrue);
+      };
+
+      content_box.appendChild(artikel);
+      artikel.appendChild(button);
+    }
+  </script>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-176121451-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+
+    gtag('config', 'UA-176121451-1', {
+      'anonymize_ip': true
+    });
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-K73ZCBF');
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5350651163680266" crossorigin="anonymous"></script>
+
+  <!-- <script async src="https://fundingchoicesmessages.google.com/i/pub-5350651163680266?ers=1" nonce="00lFC4HIceS1EDDP1QysnQ"></script>
+  <script nonce="00lFC4HIceS1EDDP1QysnQ">
+    (function() {
+      function signalGooglefcPresent() {
+        if (!window.frames['googlefcPresent']) {
+          if (document.body) {
+            const iframe = document.createElement('iframe');
+            iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';
+            iframe.style.display = 'none';
+            iframe.name = 'googlefcPresent';
+            document.body.appendChild(iframe);
+          } else {
+            setTimeout(signalGooglefcPresent, 0);
+          }
+        }
+      }
+      signalGooglefcPresent();
+    })();
+  </script> -->
+
+  <script>
+    addEventListener('DOMContentLoaded', (event) => {
+      document.getElementById('suche_summit').addEventListener('click', suche);
+
+      document.getElementById('suche_input').onkeydown = function(e) {
+        if (e.keyCode == 13) {
+          suche();
+        }
+      };
+    });
+
+    function suche() {
+      var suche_text = document.getElementById('suche_input').value
+      document.getElementById('suche_input').value = "";
+      document.location = ("https://cse.google.com/cse?cx=7718be5d5ddc85d34&q=" + suche_text);
+    }
+  </script>
+
+</head>
+
+<body>
+
+
+  <div id="wrapper" style="
+    min-height: calc(100vh - 98px);
+    ">
+    <div class="head">
+      <img src="/img/logo.png" alt="Logo von @Zauberah erstellt." style="width:64px;height:51px;">
+      <a href="/">Helden des Bildschirms</a>
+    </div>
+
+    <div class="over_nav">
+      <a href="/">Home</a>
+      <a href="/artikel">Blog</a>
+      <a href="/download">Download Server</a>
+      <!-- <a href="#minecraft">Minecraft Server</a>
+      <a href="#blog">Blog</a>
+      <a href="#such_hilfe">Download Server</a> -->
+      <a href="/#voiceserver">Voiceserver</a>
+      <a href="/#spenden">Spenden</a>
+      <a href="/#twitch-embed">Twitch</a>
+      <div class="suchen" style="float:right">
+        <input type="text" value="" id="suche_input" class="suche"><button id="suche_summit" class="suche">suchen</button>
+      </div>
+    </div>
+
+    <content_box>
+
+      <script>
+        function dateiauswahl(evt) {
+          var dateien = evt.target.files; // FileList object
+
+          // Auslesen der gespeicherten Dateien durch Schleife
+          for (var i = 0, f; f = dateien[i]; i++) {
+
+            // nur Bild-Dateien
+            if (!f.type.match('image.*')) {
+              continue;
+            }
+
+            var reader = new FileReader();
+
+            reader.onload = (function(theFile) {
+              return function(e) {
+                // erzeuge Thumbnails.
+                var vorschau = document.createElement('img');
+                vorschau.className = 'thumb';
+                vorschau.src = e.target.result;
+                vorschau.style = "width: 100%; height: auto";
+                vorschau.title = theFile.name;
+                document.getElementById('file_list').insertBefore(vorschau, null);
+              };
+            })(f);
+
+            // Bilder als Data URL auslesen.
+            reader.readAsDataURL(f);
+          }
+        }
+        // Auf neue Auswahl reagieren und gegebenenfalls Funktion dateiauswahl neu ausführen.
+
+        function toggle(el) {
+          //el= document.getElementsByTagName("description");
+          el = document.getElementById(el);
+          el.style.display = el.style.display != 'none' ? 'none' : '';
+        }
+        //for (let e of document.querySelectorAll ("input")) { e.style.color="green"; }
+        //for (let e of document.getElementsByTagName(" input")) { e.style.display = "none"; }
+        document.addEventListener("DOMContentLoaded", () => {
+          document.getElementById('myFile').addEventListener('change', dateiauswahl, false);
+          document.getElementById('payback_suche_help_summit').addEventListener('click', toggleall, false);
+          document.getElementById('MinLänge_checkbox').addEventListener('click', togglemintxt, false);
+          document.getElementById('MaxLänge_checkbox').addEventListener('click', togglemaxtxt, false);
+          document.getElementById('payback_suche_input_maxzahlen').addEventListener('change', changemaxtxt, false);
+          document.getElementById('payback_suche_input_minzahlen_eingabe').addEventListener('change', changemintxt, false);
+          document.getElementById('payback_suche_settings_summit').addEventListener('click', togglesettings, false);
+          document.getElementById('linkliste_summit').addEventListener('click', copylink, false);
+          document.getElementById('link_liste_checkbox').addEventListener('click', togglelinklist, false);
+          // document.getElementById('egalwo_checkbox').addEventListener('click', togglepossuche, false);
+
+          function toggleall() {
+            toggle("help1");
+            toggle("help2");
+            toggle("help3");
+          }
+
+          function togglemintxt() {
+            toggle("payback_suche_input_minzahlen");
+            toggle("payback_suche_input_minzahlen_eingabe");
+          }
+
+          function togglemaxtxt() {
+            toggle("payback_suche_input_zahlen");
+            toggle("payback_suche_input_maxzahlen");
+            if (document.getElementById("payback_suche_input_zahlen").placeholder == "Maximale Posts") {
+              document.getElementById("payback_suche_input_zahlen").placeholder = "Länge";
+            } else {
+              document.getElementById("payback_suche_input_zahlen").placeholder = "Maximale Posts";
+            }
+          }
+
+          function changemaxtxt() {
+            document.getElementById("payback_suche_input_zahlen").value = document.getElementById("payback_suche_input_maxzahlen").value;
+          }
+
+          function changemintxt() {
+            document.getElementById("payback_suche_input_minzahlen").value = document.getElementById("payback_suche_input_minzahlen_eingabe").value;
+          }
+
+          function togglesettings() {
+            toggle("settings");
+          }
+
+          function copylink() {
+            let txt = (document.getElementById("input_linkliste").value);
+            copy("input_linkliste");
+          }
+
+          function togglelinklist() {
+            toggle("linklist");
+          }
+
+          // function togglepossuche() {
+          //   toggle("possuche");
+          //   if (egalwo_checkbox.checked == true) {
+          //     anfangsuche_checkbox.checked = false;
+          //     mittesuche_checkbox.checked = false;
+          //     endesuche_checkbox.checked = false;
+          //   }
+          // }
+        });
+      </script>
+      <div class="default_text">
+        <box>
+          <h1>Finde GEO Daten in deinem Blog und schütze dich.<br> </h1>
+        </box>
+        <div class="adblockdetect">
+        </div>
+        <box>
+          <div class="ads showads">
+            <div id="werbung_google_layerable">
+              <!-- Adblocklayerable -->
+              <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-5350651163680266" data-ad-slot="5168793244" data-ad-format="auto" data-full-width-responsive="true"></ins>
+              <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+
+                let adBlockEnabled = false;
+                async function detectAdBlock() {
+                  const googleAdUrl = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+                  try {
+                    await fetch(new Request(googleAdUrl)).catch(_ => adBlockEnabled = true)
+                  } catch (e) {
+                    adBlockEnabled = true;
+                  } finally {
+                    console.log(`AdBlock Enabled: ${adBlockEnabled}`)
+                  }
+
+                  if (adBlockEnabled == true) {
+                    adBlockEnabled = true;
+                    return true;
+                  }
+
+                  setTimeout(function() {
+                    var a = document.querySelector('.showads'),
+                      adBlockEnabled = a ? (a.offsetHeight ? false : true) : true;
+                    console.log('ads blocked?', adBlockEnabled)
+                    if (adBlockEnabled == true) {
+                      adBlockEnabled = true;
+                      return true;
+                    }
+                  }, 1000);
+
+                  setTimeout(function() {
+                    if (document.querySelector('.showads').offsetHeight <= 65 || document.querySelector('.adsbygoogle').offsetHeight <= 5 || adBlockEnabled == true) {
+                      console.log('ads blocked?', ' = true');
+                      adBlockEnabled = true;
+                      return true;
+                    }
+                  }, 1000);
+
+                  return false;
+                }
+
+                detectAdBlock();
+                setTimeout(function() {
+                  if (adBlockEnabled == true) {
+                    const title = document.createElement("a");
+                    const content_box = document.getElementsByClassName("adblockdetect")[0];
+                    title.innerHTML =
+                      'Adblocker erkannt, ich werde die Dienstleistung nicht einschränken, will dich aber dennoch bieten diesen zu deaktivieren. <br> Wie habe ich dich erkannt, ja das ist einfach: <a href="https://heldendesbildschirms.de/artikel/?artikel=was-ist-eigentlich-der-sinn-von-anti-adblockern-wie-leicht-lassen-sie-sich-umgehen">Was ist eigentlich der Sinn von Anti-Adblockern / Wie leicht lassen sie sich umgehen </a> <br> Falls du Adblocker mit Whitelisting nutzt, solltest du zu uBlock Origin und Privacy Badger wechseln. ;)';
+                    content_box.appendChild(title);
+
+                  } else {
+                    //alert("adblocker nicht erkannt");
+                  }
+                }, 1000);
+              </script>
+            </div>
+          </div>
+          <!-- <a href="https://forms.gle/fArRfcpy95PiTV25A">Umgfrage zur Werbeoptimierung</a> -->
+        </box>
+      </div>
+
+      <div class="nav">
+        <div id="server_box_left" style="display: inline-block; color: rgba(255, 255, 255, 1.0); text-align: center;">
+          <!-- <box> -->
+          <div id="such_hilfe" style="display: inline-block; background-color: rgba(0, 0, 255, 0.5); margin-top: 10px;">
+            <!-- <box> -->
+            <description>
+              Exif Checker sucht die Meta-Daten von JPEG und Co nach Geo Daten ab. <br>
+              Nutzername eintragen und scannen:
+            </description>
+            <description>
+              <input type="file" id="myFile" style="display:none;">
+              <div id="file_list">
+              </div>
+            </description>
+            <div id="livelogollist">
+            </div>
+            <input type="text" value="" placeholder="Buchstaben" id="payback_suche_input_buchstaben" class="payback_suche_input_buchstaben">
+            <input type="number" value="" placeholder="Länge" id="payback_suche_input_zahlen" class="payback_suche_input_zahlen" style="display:none;"> <br>
+            <input type="number" value="" placeholder="Start Post" id="payback_suche_input_minzahlen" class="payback_suche_input_minzahlen" style="display: none; margin-left: 10%; margin-right: 10%;">
+            <button id="payback_suche_summit" style="width: auto;">suchen</button>
+            <br>
+            <button id="payback_suche_settings_summit" style="width: 150px; float:left;">Einstellungen</button> <br> <br>
+            <div id="errorlist" style="display: none;">
+              <description>
+                Leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive automatisch überprüfen. <br>
+                Damit du auch deine restlichen Bilder Prüfen kannst musst du auf diesen Knopf drücken, die API macht diesen Schritt ohne Nutzer interation sehr schwer. <br>
+              </description>
+
+              <button id="errorlistmore_summit" style="width: 100%; float:right; ">Weitere 500 Posts überprüfen</button>
+            </div>
+            <div id="settings" style="display:none;">
+              <description>
+                Sonstige Optionen: <br>
+
+                <label for="myCheck">Steem:</label>
+                <input type="checkbox" id="steem_checkbox" style="width: auto;">
+
+                <br><label for="myCheck">Hive:</label>
+                <input type="checkbox" id="hive_checkbox" style="width: auto;"><br><br>
+
+                <div id="help1" style="display: none;">
+                  <description>
+                    Dieser Modus zeigt alle Posts im Blog an, das kann aber viel Leistung nehmen ab einer gewissen Größe. <br>
+                  </description>
+                </div>
+                <label for="myCheck">Autor ignorieren um Posts von Community und Restream im Blog anzuzeigen:</label>
+                <input type="checkbox" id="buchstaben_checkbox" style="width: auto;">
+                <br><br>
+                <div id="help2" style="display: none;">
+                  <description>
+                    Dieser Modus ist nützlich, wenn nur ein bestimmter Berreich im Blog gescannt werden soll und sparrt so mit Leistung und Traffic. <br>
+                  </description>
+                </div>
+
+                <!-- <label for="myCheck"></label>
+                <input type="checkbox" id="egalwo_checkbox" style="width: auto;"> <br>
+                 <div id="possuche" style="display: none;">
+                  <div id="help3" style="display: none;">
+                    <description>
+                      Dieser Modus bestimmt in welchem Teil des Logos gesucht wird, Anfang | Mitte | Ende.
+                    </description>
+                  </div>
+                  <br><label for="myCheck">Ist eine Positon bekannt? (Nicht ankreuzen wenn überall gesucht werden soll.)</label>
+                  <br>
+                  <input type="checkbox" id="anfangsuche_checkbox" style="width: 25%;">
+                  <input type="checkbox" id="mittesuche_checkbox" style="width: 25%;">
+                  <input type="checkbox" id="endesuche_checkbox" style="width: 25%;">
+                </div> -->
+                <label for="myCheck">Maximale Anzahl an Posts die untersucht werden sollen:</label>
+                <input type="checkbox" id="MaxLänge_checkbox" style="width: auto;"> <br>
+                <input type="number" value="" placeholder="Maximale Posts" id="payback_suche_input_maxzahlen" class="payback_suche_input_maxzahlen" style="display: none; width: 100%;">
+                <label for="myCheck">Start Post festlegen:</label>
+                <input type="checkbox" id="MinLänge_checkbox" style="width: auto;"> <br>
+                <input type="number" value="" placeholder="Start Post" id="payback_suche_input_minzahlen_eingabe" class="payback_suche_input_minzahlen_eingabe" style="display: none; width: 100%;">
+                <!-- <label for="myCheck">Länge ignorieren:</label>
+                <input type="checkbox" id="Länge_checkbox" style="width: auto;"> <br>
+                <label for="myCheck">Suchmodus für Umlaute, kann Logos mit üöäß finden, aber macht die Suche ungenauer.</label>
+                <input type="checkbox" id="replaceUmlaute_checkbox" style="width: auto;"> <br> -->
+                <br><label for="myCheck">Link Liste mit allen Egebnissen erstellen:</label>
+                <input type="checkbox" id="link_liste_checkbox" style="width: auto;"> <br>
+
+                <br><label for="myCheck">Egebnisse nicht als Bild anzeigen:</label>
+                <input type="checkbox" id="noimg_checkbox" style="width: auto;">
+
+                <br><label for="myCheck">Bild Cache (in Arbeit):</label>
+                <input type="checkbox" id="livesuche_checkbox" style="width: auto;">
+                <button id="payback_suche_help_summit" style="width: 80px; float:right; ">Hilfe?</button>
+              </description>
+            </div>
+            <div class="logollist">
+              Gefunden: <br>
+            </div>
+            <div id="linklist" style="display: none;">
+              Liste aller deiner betroffen Bilder: <br>
+              <textarea type="text" id="input_linkliste" style="width: 100%;"></textarea>
+              <button id="linkliste_summit" style="width: 80px; float:right; ">Copy</button>
+            </div>
+            <!-- </box> -->
+          </div>
+          <!-- </box> -->
+        </div>
+
+        <script>
+          var ads = [
+            '<iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesb0c1-21&marketplace=amazon&amp;region=DE&placement=B07FCMKK5X&asins=B07FCMKK5X&linkId=f563fc0fd132305d0a6d7e1a2cb6e31c&show_border=false&link_opens_in_new_window=true&price_color=333333&title_color=0066c0&bg_color=ffffff"></iframe>',
+            '<iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesb0c1-21&marketplace=amazon&amp;region=DE&placement=B08GYKNCCP&asins=B08GYKNCCP&linkId=0173a9cbda143dabd7158581f6086d08&show_border=false&link_opens_in_new_window=true&price_color=333333&title_color=0066c0&bg_color=ffffff"></iframe>',
+            '<iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B08GVDNTGJ&asins=B08GVDNTGJ&linkId=69d02f5ddd18df8dea428ab3101e1b6d&show_border=false&link_opens_in_new_window=true"></iframe>',
+            '<iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B08QJHLC8J&asins=B08QJHLC8J&linkId=94c939aef19537e6362cdd2ccdb185e8&show_border=false&link_opens_in_new_window=true"></iframe>',
+            '<iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B0924W1CV5&asins=B0924W1CV5&linkId=62ed2c94241ddbe099bcfe2ae3e1ec59&show_border=false&link_opens_in_new_window=true"></iframe>',
+            7,
+            9,
+            10,
+            11,
+            13,
+            14, 15, 16, 19, 20, 21, 22, 23, 26, 27, 28
+          ];
+          var gen_nums = [];
+
+          function in_array(array, el) {
+            for (var i = 0; i < array.length; i++)
+              if (array[i] == el) return true;
+            return false;
+          }
+
+          function get_rand(array) {
+            var rand = array[Math.floor(Math.random() * array.length)];
+            if (!in_array(gen_nums, rand)) {
+              gen_nums.push(rand);
+              return rand;
+            }
+            return get_rand(array);
+          }
+
+          function better_amazon_ads() {
+
+          }
+        </script>
+
+        <div class="werbung">
+          <box>
+            <div id="better_amazon_ads_list">
+
+            </div>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B09BPG4LDD&asins=B09BPG4LDD&linkId=7b0e4191952ed4fb8075a1e3dc1f46b5&show_border=false&link_opens_in_new_window=true"></iframe>
+            <!-- <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+            src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B07V6KD4ZY&asins=B07V6KD4ZY&linkId=09793a323ab1ff2f78c5e2ef59ee574c&show_border=false&link_opens_in_new_window=true"></iframe> -->
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B09QWH3T52&asins=B09QWH3T52&linkId=d241274730ec06da2426bd407ebc4c1e&show_border=false&link_opens_in_new_window=true"></iframe>
+            <!-- <iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesb0c1-21&marketplace=amazon&amp;region=DE&placement=B07FCMKK5X&asins=B07FCMKK5X&linkId=f563fc0fd132305d0a6d7e1a2cb6e31c&show_border=false&link_opens_in_new_window=true&price_color=333333&title_color=0066c0&bg_color=ffffff"></iframe> -->
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B00EWT1Y46&asins=B00EWT1Y46&linkId=b26fb252ed55df4850be39eb28836ce9&show_border=false&link_opens_in_new_window=true"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B01C0EF2OC&asins=B01C0EF2OC&linkId=c055524d5299430ffd5d07a4591c4ae1&show_border=false&link_opens_in_new_window=true"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B081CYKRJF&asins=B081CYKRJF&linkId=5e8167f5ef63957fb27951e993b91362&show_border=false&link_opens_in_new_window=true"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B00X81M4FW&asins=B00X81M4FW&linkId=c5e5975c56772b91271034008ae95d03&show_border=true&link_opens_in_new_window=true"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B084CW9L8R&asins=B084CW9L8R&linkId=7cadcfbecb7c1aad6daf11b1e638adc7&show_border=false&link_opens_in_new_window=true"></iframe>
+            <iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesb0c1-21&marketplace=amazon&amp;region=DE&placement=B08GYKNCCP&asins=B08GYKNCCP&linkId=0173a9cbda143dabd7158581f6086d08&show_border=false&link_opens_in_new_window=true&price_color=333333&title_color=0066c0&bg_color=ffffff"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B09F4LLK1R&asins=B09F4LLK1R&linkId=a5a3f1610bc6b35b82ebb398b352a404&show_border=false&link_opens_in_new_window=true"></iframe>
+            <!-- <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B08GVDNTGJ&asins=B08GVDNTGJ&linkId=69d02f5ddd18df8dea428ab3101e1b6d&show_border=false&link_opens_in_new_window=true"></iframe> -->
+            <!-- <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B08QJHLC8J&asins=B08QJHLC8J&linkId=94c939aef19537e6362cdd2ccdb185e8&show_border=false&link_opens_in_new_window=true"></iframe> -->
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B0924W1CV5&asins=B0924W1CV5&linkId=62ed2c94241ddbe099bcfe2ae3e1ec59&show_border=false&link_opens_in_new_window=true"></iframe>
+            <!-- <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B07PHPXHQS&asins=B07PHPXHQS&linkId=891fbb8ae7beace0e315105660387054&show_border=false&link_opens_in_new_window=true"></iframe> -->
+            <!-- <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B0046GG1XY&asins=B0046GG1XY&linkId=4e8059d13b4351cbd6e328a058235f7d&show_border=false&link_opens_in_new_window=true"></iframe>
+            <iframe sandbox="allow-popups allow-scripts allow-modals allow-forms allow-same-origin" style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0"
+              src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ss&ref=as_ss_li_til&ad_type=product_link&tracking_id=heldendesb0c1-21&language=de_DE&marketplace=amazon&region=DE&placement=B07NZZZ746&asins=B07NZZZ746&linkId=5b8cb3878b4d179c1424bc0789997bdf&show_border=false&link_opens_in_new_window=true"></iframe> -->
+            <iframe src="https://rcm-eu.amazon-adsystem.com/e/cm?o=3&p=12&l=ur1&category=pw&banner=1RWHE2Q7M2AQ18P32H02&f=ifr&linkID=be6e19476942c4c3af4a16c8ca9bf731&t=heldendesb0c1-21&tracking_id=heldendesb0c1-21" width="300" height="250"
+              scrolling="no" border="0" marginwidth="0" style="border:none;" frameborder="0" sandbox="allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"></iframe>
+            <iframe src="https://rcm-eu.amazon-adsystem.com/e/cm?o=3&p=20&l=ur1&category=prime_video&banner=08WJ67E41CC04W6R9S02&f=ifr&linkID=10db44646b15f2ff0ce4c27b42c716f1&t=heldendesb0c1-21&tracking_id=heldendesb0c1-21" width="120" height="90"
+              scrolling="no" border="0" marginwidth="0" style="border:none;" frameborder="0" sandbox="allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation"></iframe>
+            <br><br>
+            Als Amazon-Partner verdiene ich an qualifizierten Verkäufen
+          </box>
+        </div>
+
+        <div id="blog">
+          <!-- <box> -->
+          Empfohlene Beiträge: <br>
+          <div class="lastartikellist">
+          </div>
+          <!-- </box> -->
+        </div>
+
+        </a>
+
+        <!-- </box> -->
+
+        <script>
+          function copy(txt) {
+            var copyText = document.getElementById(txt);
+            copyText.select();
+            copyText.setSelectionRange(0, 99999)
+            document.execCommand("copy");
+            /*const content_box = document.getElementsByTagName("footer")[0];
+            const meldung = document.createElement("textarea");
+            meldung.value = ("Copied the text: " + copyText.value);
+            meldung.style = "font-size: 150%; position: absolute; bottom 0px;";
+            content_box.appendChild(meldung);
+            meldung.select()
+            //meldung.remove()
+            setTimeout(document.getElementsByTagName("textarea").remove(), 1000);*/
+          }
+        </script>
+
+        <!--<div id="werbung">
+<iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesbild-21&marketplace=amazon&region=DE&placement=B07WFQQLBG&asins=B07WFQQLBG&linkId=8841e2dc7d055c4469d0eaf3233e1d2b&show_border=false&link_opens_in_new_window=false&price_color=333333&title_color=0066c0&bg_color=ffffff">
+    </iframe>
+
+<iframe style="width:120px;height:240px;" marginwidth="0" marginheight="0" scrolling="no" frameborder="0" src="//ws-eu.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&OneJS=1&Operation=GetAdHtml&MarketPlace=DE&source=ac&ref=tf_til&ad_type=product_link&tracking_id=heldendesbild-21&marketplace=amazon&region=DE&placement=B07PVCVBN7&asins=B07PVCVBN7&linkId=19eb6fd6268585cc196290d07813cf3a&show_border=false&link_opens_in_new_window=false&price_color=333333&title_color=0066c0&bg_color=ffffff">
+    </iframe>
+</div>-->
+
+        <div id="werbung_google">
+          <!-- Adblock -->
+          <ins class="adsbygoogle" style="display:block; text-align:center; margin-top: 1%;" data-ad-client="ca-pub-5350651163680266" data-ad-slot="9833970873" data-ad-format="auto" data-full-width-responsive="true"></ins>
+          <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+          </script>
+        </div>
+    </content_box>
+  </div>
+</body>
+
+<footer>
+  <text>
+    <ul>
+      <!-- <li>&copy; 2019 Helden des Bildschirms</li> -->
+      <li><a href="mailto:support@heldendesbildschirms.de">Kontakt</a></li>
+      <li><a href="/datenschutz.html">Datenschutz</a></li>
+      <li><a href="/impressum.html">Impressum</a></li>
+    </ul>
+  </text>
+</footer>
+
+</html>
