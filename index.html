@@ -419,173 +419,176 @@
       if (MaxLänge_checkbox.checked == true) {
         //maxlänge = document.getElementById("payback_suche_input_maxzahlen").value;
         if (parseInt(document.getElementById("payback_suche_input_zahlen").value) <= 500) {
-            scanlength = parseInt(document.getElementById("payback_suche_input_zahlen").value);
-          } else {
-            alert("500 ist das maximum");
-            document.getElementById("payback_suche_input_zahlen").value = 500;
-            document.getElementById("payback_suche_input_maxzahlen").value = 500;
-          }
+          scanlength = parseInt(document.getElementById("payback_suche_input_zahlen").value);
+        } else {
+          alert("500 ist das maximum");
+          document.getElementById("payback_suche_input_zahlen").value = 500;
+          document.getElementById("payback_suche_input_maxzahlen").value = 500;
         }
-
-        var scanminlength = 0;
-        if (MinLänge_checkbox.checked == true) {
-          scanminlength = parseInt(document.getElementById("payback_suche_input_minzahlen").value);
-        }
-
-        hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) { //getBlog ist Vielleicht deutlich besser geeigent, kann aber nicht alles scannen Kommentare fehlen auch.
-          if (data.length == 500) { //Da muss eigentlich eine Schleife hin.
-            document.getElementById("errorlist").style.display = "";
-            document.getElementById("settings").style.display = "";
-            MaxLänge_checkbox.checked = true;
-            MinLänge_checkbox.checked = true;
-            document.getElementById("payback_suche_input_zahlen").style.display = "";
-            document.getElementById("payback_suche_input_minzahlen").style.display = "";
-            document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "";
-            document.getElementById("payback_suche_input_maxzahlen").style.display = "";
-            //document.getElementById("errorlistmore_summit").onclick = "createCheckArtikelPage_hive_api(" + author + ");";
-            document.getElementById("errorlistmore_summit").onclick = function() {
-              createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
-            }
-            //document.getElementById("payback_suche_summit").innerText = "Weitere 500 Posts überprüfen";
-            document.getElementById("payback_suche_input_minzahlen").value = (scanminlength + 500);
-            document.getElementById("payback_suche_input_zahlen").value = 500;
-            document.getElementById("payback_suche_input_minzahlen_eingabe").value = (scanminlength + 500);
-            document.getElementById("payback_suche_input_maxzahlen").value = 500;
-            // alert("Oh ein Fehler, leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive überprüfen.");
-            // hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) {
-            //
-            // });
-          } else {
-            document.getElementById("errorlist").style.display = "none";
-            document.getElementById("settings").style.display = "none";
-            MaxLänge_checkbox.checked = false;
-            MinLänge_checkbox.checked = false;
-            document.getElementById("payback_suche_input_zahlen").style.display = "none";
-            document.getElementById("payback_suche_input_minzahlen").style.display = "none";
-            document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "none";
-            document.getElementById("payback_suche_input_maxzahlen").style.display = "none";
-            //document.getElementById("payback_suche_summit").innerText = "suchen";
-          }
-
-          for (var i = 0; i < data.length; i++) {
-            if (data[i]["author"] == author) {
-              checkArtikel_hive_api(author, data[i]["permlink"], i);
-            }
-          }
-          Artikel_hive_api_scan_running = false;
-          document.getElementById(payback_suche_summit.innerText = "suchen");
-        });
       }
 
-      async function checkArtikel_hive_api(author, permlink, i) {
-        hive.api.getContent(author, permlink, async function(err, result) {
-          var json_metadatatemp = JSON.parse(result["json_metadata"]).image
-          if (json_metadatatemp != null && json_metadatatemp != undefined) {
-            for (var ii = 0; ii < ((JSON.parse(result["json_metadata"]).image).length); ii++) {
-              const ingscr = (JSON.parse(result["json_metadata"]).image[ii]); //
-              try {
-                var mode = 0;
-                if (livesuche_checkbox.checked == true) {
-                  mode = 1;
-                }
-                if (mode == 1) {
-                  var imagetemp = new Image(); //Kann Netzwerk leistung sparren. Allerdings muss ich wohl eine dataURL erstellen ohne Canvas.
-                  imagetemp.crossOrigin = "Anonymous";
-                  imagetemp.src = JSON.parse(result["json_metadata"]).image[ii];
-                  let {
-                    latitude,
-                    longitude
-                  } = await exifr.gps(imagetemp);
-                  if (typeof latitude === 'number' || typeof longitude === 'number') {
-                    createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
-                  }
-                } else {
-                  var imagetemp = 0;
-                  let {
-                    latitude,
-                    longitude
-                  } = await exifr.gps(JSON.parse(result["json_metadata"]).image[ii]);
-                  if (typeof latitude === 'number' || typeof longitude === 'number') {
-                    createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
-                  }
-                }
-              } catch (e) {} finally {}
+      var scanminlength = 0;
+      if (MinLänge_checkbox.checked == true) {
+        scanminlength = parseInt(document.getElementById("payback_suche_input_minzahlen").value);
+      }
+
+      hive.api.getBlog(author, scanminlength, scanlength, function(err, data) { //getBlog ist Vielleicht deutlich besser geeigent, kann aber nicht alles scannen Kommentare fehlen auch.
+        if (data.length == 500) { //Da muss eigentlich eine Schleife hin.
+          document.getElementById("errorlist").style.display = "";
+          document.getElementById("settings").style.display = "";
+          MaxLänge_checkbox.checked = true;
+          MinLänge_checkbox.checked = true;
+          document.getElementById("payback_suche_input_zahlen").style.display = "";
+          document.getElementById("payback_suche_input_minzahlen").style.display = "";
+          document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "";
+          document.getElementById("payback_suche_input_maxzahlen").style.display = "";
+          //document.getElementById("errorlistmore_summit").onclick = "createCheckArtikelPage_hive_api(" + author + ");";
+          document.getElementById("errorlistmore_summit").onclick = function() {
+            createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
+          }
+          //document.getElementById("payback_suche_summit").innerText = "Weitere 500 Posts überprüfen";
+          document.getElementById("payback_suche_input_minzahlen").value = (scanminlength + 500);
+          document.getElementById("payback_suche_input_zahlen").value = 500;
+          document.getElementById("payback_suche_input_minzahlen_eingabe").value = (scanminlength + 500);
+          document.getElementById("payback_suche_input_maxzahlen").value = 500;
+          // alert("Oh ein Fehler, leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive überprüfen.");
+          // hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) {
+          //
+          // });
+        } else {
+          document.getElementById("errorlist").style.display = "none";
+          document.getElementById("settings").style.display = "none";
+          MaxLänge_checkbox.checked = false;
+          MinLänge_checkbox.checked = false;
+          document.getElementById("payback_suche_input_zahlen").style.display = "none";
+          document.getElementById("payback_suche_input_minzahlen").style.display = "none";
+          document.getElementById("payback_suche_input_minzahlen_eingabe").style.display = "none";
+          document.getElementById("payback_suche_input_maxzahlen").style.display = "none";
+          //document.getElementById("payback_suche_summit").innerText = "suchen";
+        }
+
+        for (var i = 0; i < data.length; i++) {
+          //if (data[i]["author"] == author) {
+          //checkArtikel_hive_api(author, data[i]["permlink"], i);
+          if (data[i]["comment"]["author"] == author) {
+            checkArtikel_hive_api(data[i]["comment"]);
+          }
+        }
+        Artikel_hive_api_scan_running = false;
+        document.getElementById(payback_suche_summit.innerText = "suchen");
+      });
+    }
+
+    async function checkArtikel_hive_api(result, i) {
+      //async function checkArtikel_hive_api(author, permlink, i) {
+      //hive.api.getContent(author, permlink, async function(err, result) {
+      var json_metadatatemp = JSON.parse(result["json_metadata"]).image
+      if (json_metadatatemp != null && json_metadatatemp != undefined) {
+        for (var ii = 0; ii < ((JSON.parse(result["json_metadata"]).image).length); ii++) {
+          const ingscr = (JSON.parse(result["json_metadata"]).image[ii]); //
+          try {
+            var mode = 0;
+            if (livesuche_checkbox.checked == true) {
+              mode = 1;
             }
-          }
-        });
+            if (mode == 1) {
+              var imagetemp = new Image(); //Kann Netzwerk leistung sparren. Allerdings muss ich wohl eine dataURL erstellen ohne Canvas.
+              imagetemp.crossOrigin = "Anonymous";
+              imagetemp.src = JSON.parse(result["json_metadata"]).image[ii];
+              let {
+                latitude,
+                longitude
+              } = await exifr.gps(imagetemp);
+              if (typeof latitude === 'number' || typeof longitude === 'number') {
+                createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
+              }
+            } else {
+              var imagetemp = 0;
+              let {
+                latitude,
+                longitude
+              } = await exifr.gps(JSON.parse(result["json_metadata"]).image[ii]);
+              if (typeof latitude === 'number' || typeof longitude === 'number') {
+                createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode);
+              }
+            }
+          } catch (e) {} finally {}
+        }
+      }
+      //});
+    }
+
+    function createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode) {
+      const br = document.createElement("br");
+      const imgcontainer = document.createElement("imgcontainer");
+      const picture = document.createElement("picture");
+      const imgcontainera = document.createElement("a");
+      const title = document.createElement("a");
+      const img = document.createElement("img");
+      const imglink = document.createElement("input");
+      const imglinkbtm = document.createElement("button");
+      const date = document.createElement("datum");
+      const geo = document.createElement("a");
+      const content_box = document.getElementsByClassName("logollist")[0];
+
+      const artikel = document.createElement("artikel");
+
+      var hreflink = "https://hive.blog/";
+      if (result["community"] != "") {
+        hreflink = hreflink + result["community"] + "/"
+      }
+      hreflink = hreflink + "@" + result["author"] + "/" + result["permlink"];
+
+      var img_src = (JSON.parse(result["json_metadata"]).image[ii]);
+      if (link_liste_checkbox.checked == true) {
+        document.getElementById("input_linkliste").value = document.getElementById("input_linkliste").value + img_src + "\n";
       }
 
-      function createcheckArtikel_hive_api(i, result, latitude, longitude, ii, imagetemp, mode) {
-        const br = document.createElement("br");
-        const imgcontainer = document.createElement("imgcontainer");
-        const picture = document.createElement("picture");
-        const imgcontainera = document.createElement("a");
-        const title = document.createElement("a");
-        const img = document.createElement("img");
-        const imglink = document.createElement("input");
-        const imglinkbtm = document.createElement("button");
-        const date = document.createElement("datum");
-        const geo = document.createElement("a");
-        const content_box = document.getElementsByClassName("logollist")[0];
-
-        const artikel = document.createElement("artikel");
-
-        var hreflink = "https://hive.blog/";
-        if (result["community"] != "") {
-          hreflink = hreflink + result["community"] + "/"
+      if (noimg_checkbox.checked != true) {
+        if (mode == 1) {
+          imagetemp.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+          imagetemp.href = hreflink;
+        } else {
+          img.src = img_src;
+          img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
+          imgcontainera.href = hreflink;
         }
-        hreflink = hreflink + "@" + result["author"] + "/" + result["permlink"];
-
-        var img_src = (JSON.parse(result["json_metadata"]).image[ii]);
-        if (link_liste_checkbox.checked == true) {
-          document.getElementById("input_linkliste").value = document.getElementById("input_linkliste").value + img_src + "\n";
-        }
-
-        if (noimg_checkbox.checked != true) {
-          if (mode == 1) {
-            imagetemp.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
-            imagetemp.href = hreflink;
-          } else {
-            img.src = img_src;
-            img.style = "max-width:100%; height:auto; display: inline-block; vertical-align: middle;";
-            imgcontainera.href = hreflink;
-          }
-        }
-
-        title.innerText = result["title"];
-        title.href = hreflink;
-        var dt = new Date(result["created"]);
-        date.innerText = dt.getDate() + "." + (dt.getMonth() + 1) + "." + dt.getFullYear() + " " + dt.getHours() + ":" + dt.getMinutes();
-
-        content_box.appendChild(artikel);
-        artikel.appendChild(imgcontainera);
-        imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
-        imgcontainera.appendChild(imgcontainer);
-        imgcontainer.appendChild(picture);
-        if (img.src != null || imagetemp.src != null) {
-          if (mode == 1) {
-            picture.appendChild(imagetemp);
-          } else {
-            picture.appendChild(img);
-          }
-          imgcontainer.appendChild(br);
-        }
-        artikel.appendChild(title);
-        imglink.value = img_src;
-        imglink.id = i + ii;
-        imglinkbtm.innerText = "Copy";
-        imglinkbtm.onclick = function() {
-          copy(i + ii);
-        };
-        artikel.appendChild(imglink)
-        artikel.appendChild(imglinkbtm)
-        artikel.appendChild(date);
-
-        geo.innerHTML = "Google Maps" + '<br>' + latitude + ',' + longitude;
-        geo.style = "word-break: break-all;";
-        geo.href = 'https://www.google.com/maps/place/' + latitude + ',' + longitude; // + 'target="_blank';
-        artikel.appendChild(geo);
       }
+
+      title.innerText = result["title"];
+      title.href = hreflink;
+      var dt = new Date(result["created"]);
+      date.innerText = dt.getDate() + "." + (dt.getMonth() + 1) + "." + dt.getFullYear() + " " + dt.getHours() + ":" + dt.getMinutes();
+
+      content_box.appendChild(artikel);
+      artikel.appendChild(imgcontainera);
+      imgcontainer.style = "width:100%; overflow: hidden; display: inline-block; position: relative;";
+      imgcontainera.appendChild(imgcontainer);
+      imgcontainer.appendChild(picture);
+      if (img.src != null || imagetemp.src != null) {
+        if (mode == 1) {
+          picture.appendChild(imagetemp);
+        } else {
+          picture.appendChild(img);
+        }
+        imgcontainer.appendChild(br);
+      }
+      artikel.appendChild(title);
+      imglink.value = img_src;
+      imglink.id = i + ii;
+      imglinkbtm.innerText = "Copy";
+      imglinkbtm.onclick = function() {
+        copy(i + ii);
+      };
+      artikel.appendChild(imglink)
+      artikel.appendChild(imglinkbtm)
+      artikel.appendChild(date);
+
+      geo.innerHTML = "Google Maps" + '<br>' + latitude + ',' + longitude;
+      geo.style = "word-break: break-all;";
+      geo.href = 'https://www.google.com/maps/place/' + latitude + ',' + longitude; // + 'target="_blank';
+      artikel.appendChild(geo);
+    }
   </script>
 
   <script>
