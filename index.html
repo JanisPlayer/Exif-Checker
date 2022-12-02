@@ -470,15 +470,15 @@
             document.getElementById("errorlistmore_summit").onclick = function() {
               createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
             }
-              //document.getElementById("payback_suche_summit").innerText = "Weitere 500 Posts überprüfen";
-              document.getElementById("payback_suche_input_minzahlen").value = (scanminlength + 50);
-              document.getElementById("payback_suche_input_zahlen").value = 50;
-              document.getElementById("payback_suche_input_minzahlen_eingabe").value = (scanminlength + 50);
-              document.getElementById("payback_suche_input_maxzahlen").value = 50;
-              // alert("Oh ein Fehler, leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive überprüfen.");
-              // hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) {
-              //
-              // });
+            //document.getElementById("payback_suche_summit").innerText = "Weitere 500 Posts überprüfen";
+            document.getElementById("payback_suche_input_minzahlen").value = (scanminlength + 50);
+            document.getElementById("payback_suche_input_zahlen").value = 50;
+            document.getElementById("payback_suche_input_minzahlen_eingabe").value = (scanminlength + 50);
+            document.getElementById("payback_suche_input_maxzahlen").value = 50;
+            // alert("Oh ein Fehler, leider kann dieses Tool in der jetzigen Version nur die ersten 500 Beiträge von Hive überprüfen.");
+            // hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) {
+            //
+            // });
           } else {
             if (document.getElementById("errorlist").style.display == "") {
               document.getElementById("errorlist").style.display = "none";
@@ -501,6 +501,11 @@
           }
           Artikel_hive_api_scan_running = false;
           document.getElementById(payback_suche_summit.innerText = "suchen");
+          if (hive_auto_suche_checkbox.checked == true) {
+            if (document.getElementById("errorlist").style.display == "") {
+              createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
+            }
+          }
         });
       } else {
         hive.api.getBlogEntries(author, scanminlength, scanlength, function(err, data) { //getBlog ist Vielleicht deutlich besser geeigent, kann aber nicht alles scannen Kommentare fehlen auch.
@@ -546,6 +551,11 @@
           }
           Artikel_hive_api_scan_running = false;
           document.getElementById(payback_suche_summit.innerText = "suchen");
+          if (hive_auto_suche_checkbox.checked == true) {
+            if (document.getElementById("errorlist").style.display == "") {
+              createCheckArtikelPage_hive_api(document.getElementById("payback_suche_input_buchstaben").value);
+            }
+          }
         });
       }
     }
@@ -724,7 +734,8 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("steem_checkbox").checked = true;
-document.getElementById("hive_mode_suche_checkbox").checked = true;
+      document.getElementById("hive_mode_suche_checkbox").checked = true;
+      document.getElementById("hive_auto_suche_checkbox").checked = true;
       document.getElementById("payback_suche_input_buchstaben").value = "crazymindstorm";
       // document.getElementById("payback_suche_input_zahlen").value = "4";
       // document.getElementById("payback_suche_input_buchstaben").value = "otto";
@@ -1363,6 +1374,7 @@ document.getElementById("hive_mode_suche_checkbox").checked = true;
               <description>
                 Leider kann dieses Tool in der jetzigen Version nur die ersten 50-500 (je nach Modus) Beiträge von Hive automatisch überprüfen. <br>
                 Damit du auch deine restlichen Bilder Prüfen kannst musst du auf diesen Knopf drücken, die API macht diesen Schritt ohne Nutzer interation sehr schwer. <br>
+                Ich habe jetzt eine automatische weitersuche hinzugefügt, diese kannst du bei Problemen in den Einstellungen deaktivieren. <br>
               </description>
 
               <button id="errorlistmore_summit" style="width: 100%; float:right; ">Weitere 50-500 Posts überprüfen</button>
@@ -1420,6 +1432,9 @@ document.getElementById("hive_mode_suche_checkbox").checked = true;
 
                 <br><label for="myCheck">Egebnisse nicht als Bild anzeigen:</label>
                 <input type="checkbox" id="noimg_checkbox" style="width: auto;"><br>
+
+                <br><label for="myCheck">Hive automatisch weitersuchen:</label>
+                <input type="checkbox" id="hive_auto_suche_checkbox" style="width: auto;"><br>
 
                 <br><label for="myCheck">Hive api.getBlog keine Entries genauer, weniger API aufrufe aber nur maximal 50 Posts funktioniert gut anstatt 500:</label>
                 <input type="checkbox" id="hive_mode_suche_checkbox" style="width: auto;"><br>
